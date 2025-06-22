@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smile Immo - Location de logements à Brazzaville et Pointe-Noire</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .hero-gradient {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        }
+        .property-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .map-container {
+            height: 400px;
+            background-color: #e5e7eb;
+        }
+        .tab-active {
+            border-bottom: 3px solid #3b82f6;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        .mobile-menu {
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+        }
+        .mobile-menu.open {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body class="font-sans bg-gray-50">
+    <!-- Mobile Menu -->
+    <div class="mobile-menu fixed inset-y-0 right-0 w-64 bg-white shadow-lg z-50 p-4 overflow-y-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold text-blue-600">Menu</h3>
+            <button id="close-menu" class="text-gray-500">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+        </div>
+        <nav class="space-y-4">
+            <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 rounded-lg">Accueil</a>
+            <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 rounded-lg">Rechercher</a>
+            <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 rounded-lg">Déposer une annonce</a>
+            <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 rounded-lg">Favoris</a>
+            <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 rounded-lg">Tableau de bord</a>
+            <div class="border-t border-gray-200 pt-4">
+                <a href="#" class="block px-4 py-2 text-blue-600 font-medium">Connexion</a>
+                <a href="#" class="block px-4 py-2 bg-blue-600 text-white rounded-lg text-center">S'inscrire</a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Overlay -->
+    <div id="overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-30">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <a href="#" class="text-2xl font-bold text-blue-600 flex items-center">
+                        <i class="fas fa-home mr-2"></i>
+                        <span>Smile Immo</span>
+                    </a>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-6">
+                    <nav class="flex space-x-6">
+                        <a href="#" class="text-gray-700 hover:text-blue-600">Accueil</a>
+                        <a href="#" class="text-gray-700 hover:text-blue-600">Rechercher</a>
+                        <a href="#" class="text-gray-700 hover:text-blue-600">Déposer une annonce</a>
+                        <a href="#" class="text-gray-700 hover:text-blue-600">Favoris</a>
+                    </nav>
+                    <div class="flex items-center space-x-4">
+                        <a href="#" class="text-gray-700 hover:text-blue-600">Connexion</a>
+                        <a href="#" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">S'inscrire</a>
+                    </div>
+                </div>
+                
+                <button id="mobile-menu-button" class="md:hidden text-gray-700">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient text-white py-16 md:py-24">
+        <div class="container mx-auto px-4">
+            <div class="max-w-3xl mx-auto text-center">
+                <h1 class="text-4xl md:text-5xl font-bold mb-6">Trouvez votre logement idéal à Brazzaville et Pointe-Noire</h1>
+                <p class="text-xl mb-8">Des milliers d'annonces vérifiées pour une location en toute confiance</p>
+                
+                <!-- Search Form -->
+                <div class="bg-white rounded-lg shadow-xl p-6 text-gray-800">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-gray-700 text-sm font-medium mb-1">Ville</label>
+                            <select class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">Toutes les villes</option>
+                                <option value="brazzaville">Brazzaville</option>
+                                <option value="pointe-noire">Pointe-Noire</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-medium mb-1">Quartier</label>
+                            <select class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">Tous les quartiers</option>
+                                <optgroup label="Brazzaville">
+                                    <option>Makélékélé</option>
+                                    <option>Bacongo</option>
+                                    <option>Poto-Poto</option>
+                                    <option>Moungali</option>
+                                    <option>Ouenzé</option>
+                                    <option>Talangaï</option>
+                                    <option>Mfilou</option>
+                                    <option>Djiri</option>
+                                    <option>Centre-ville</option>
+                                </optgroup>
+                                <optgroup label="Pointe-Noire">
+                                    <option>Lumumba</option>
+                                    <option>Mvou-Mvou</option>
+                                    <option>Tié-Tié</option>
+                                    <option>Loandjili</option>
+                                    <option>Mongo-Mpoukou</option>
+                                    <option>Ngoyo</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-medium mb-1">Type</label>
+                            <select class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">Tous types</option>
+                                <option value="studio">Studio</option>
+                                <option value="1-chambre">1 chambre</option>
+                                <option value="2-chambres">2 chambres</option>
+                                <option value="3-chambres">3 chambres</option>
+                            </select>
+                        </div>
+                        <div class="flex items-end">
+                            <button class="w-full bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg font-medium">
+                                <i class="fas fa-search mr-2"></i> Rechercher
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">Pourquoi choisir Smile Immo ?</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">La solution complète pour trouver ou proposer un logement à Brazzaville et Pointe-Noire</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-gray-50 p-6 rounded-xl hover:shadow-md transition-shadow">
+                    <div class="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-search text-blue-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Recherche avancée</h3>
+                    <p class="text-gray-600">Filtrez par ville, quartier, type de logement, budget et équipements pour trouver exactement ce que vous cherchez.</p>
+                </div>
+                
+                <div class="bg-gray-50 p-6 rounded-xl hover:shadow-md transition-shadow">
+                    <div class="w-14 h-14 bg-purple-100 rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-check-circle text-purple-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Annonces vérifiées</h3>
+                    <p class="text-gray-600">Nos équipes vérifient les annonces pour vous garantir des offres sérieuses et des propriétaires fiables.</p>
+                </div>
+                
+                <div class="bg-gray-50 p-6 rounded-xl hover:shadow-md transition-shadow">
+                    <div class="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-comments text-green-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Messagerie intégrée</h3>
+                    <p class="text-gray-600">Contactez directement les propriétaires via notre plateforme sécurisée sans partager vos coordonnées.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Popular Properties -->
+    <section class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-3xl font-bold text-gray-800">Annonces récentes</h2>
+                <a href="#" class="text-blue-600 hover:underline flex items-center">
+                    Voir tout <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Property Card 1 -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-md property-card transition-transform duration-300">
+                    <div class="relative">
+                        <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" alt="Appartement" class="w-full h-48 object-cover">
+                        <div class="absolute top-3 left-3 bg-blue-600 text-white text-xs px-2 py-1 rounded">Nouveau</div>
+                        <div class="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md">
+                            <i class="far fa-heart text-gray-400 hover:text-red-500 cursor-pointer"></i>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-lg font-semibold">Studio meublé à Bacongo</h3>
+                            <span class="text-blue-600 font-bold">250 000 FCFA</span>
+                        </div>
+                        <p class="text-gray-600 text-sm mb-3 flex items-center">
+                            <i class="fas fa-map-marker-alt text-gray-400 mr-1"></i> Bacongo, Brazzaville
+                        </p>
+                        <div class="flex justify-between text-sm text-gray-500 border-t border-gray-100 pt-3">
+                            <span><i class="fas fa-bed mr-1"></i> 1</span>
+                            <span><i class="fas fa-bath mr-1"></i> 1</span>
+                            <span><i class="fas fa-ruler-combined mr-1"></i> 35 m²</span>
+                            <span><i class="fas fa-utensils mr-1"></i> Privée</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Property Card 2 -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-md property-card transition-transform duration-300">
+                    <div class="relative">
+                        <img src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" alt="Appartement" class="w-full h-48 object-cover">
+                        <div class="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md">
+                            <i class="far fa-heart text-gray-400 hover:text-red-500 cursor-pointer"></i>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-lg font-semibold">Appartement 2 chambres à Mvou-Mvou</h3>
+                            <span class="text-blue-600 font-bold">450 000 FCFA</span>
+                        </div>
+                        <p class="text-gray-600 text-sm mb-3 flex items-center">
+                            <i class="fas fa-map-marker-alt text-gray-400 mr-1"></i> Mvou-Mvou, Pointe-Noire
+                        </p>
+                        <div class="flex justify-between text-sm text-gray-500 border-t border-gray-100 pt-3">
+                            <span><i class="fas fa-bed mr-1"></i> 2</span>
+                            <span><i class="fas fa-bath mr-1"></i> 2</span>
+                            <span><i class="fas fa-ruler-combined mr-1"></i> 80 m²</span>
+                            <span><i class="fas fa-utensils mr-1"></i> Privée</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Property Card 3 -->
+                <div class="bg-white rounded-xl overflow-hidden shadow-md property-card transition-transform duration-300">
+                    <div class="relative">
+                        <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" alt="Appartement" class="w-full h-48 object-cover">
+                        <div class="absolute top-3 left-3 bg-green-600 text-white text-xs px-2 py-1 rounded">Vérifié</div>
+                        <div class="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md">
+                            <i class="far fa-heart text-gray-400 hover:text-red-500 cursor-pointer"></i>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-lg font-semibold">Villa 3 chambres à Ouenzé</h3>
+                            <span class="text-blue-600 font-bold">800 000 FCFA</span>
+                        </div>
+                        <p class="text-gray-600 text-sm mb-3 flex items-center">
+                            <i class="fas fa-map-marker-alt text-gray-400 mr-1"></i> Ouenzé, Brazzaville
+                        </p>
+                        <div class="flex justify-between text-sm text-gray-500 border-t border-gray-100 pt-3">
+                            <span><i class="fas fa-bed mr-1"></i> 3</span>
+                            <span><i class="fas fa-bath mr-1"></i> 2</span>
+                            <span><i class="fas fa-ruler-combined mr-1"></i> 120 m²</span>
+                            <span><i class="fas fa-utensils mr-1"></i> Privée</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cities Section -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">Nos zones couvertes</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">Trouvez des logements dans tous les quartiers de Brazzaville et Pointe-Noire</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <!-- Brazzaville -->
+                <div class="bg-blue-50 rounded-xl p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-city text-blue-600"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold">Brazzaville</h3>
+                    </div>
+                    <p class="text-gray-700 mb-4">9 départements couverts :</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <span class="bg-white px-3 py-1 rounded-full text-sm shadow-sm">Makélékélé</span>
+                        <span class="bg-white px-3 py-1 rounded-full text-sm shadow-sm">Bacongo</span>
+                        <span class="bg-white px-3 py-1 rounded-full text-sm shadow-sm">Poto-Poto</span>
+                        <span class="bg-white px-3 py-1 rounded-full text-sm shadow-sm">Moungali</span>
+                        <span class="bg-white px-3 py-1 rounded-full text-sm shadow-sm">Ouenzé</span>
+                        <span class="bg-white px-3 py-1 rounded-full text-sm shadow-sm">Talangaï</span>
+                        <span class="bg-white px-3 py-1 rounded-full text-sm shadow-sm">Mfilou</span>
+                        <span class="bg-white px-3 py-1 rounded-full text-sm shadow-sm">Djiri</span>
+                        <span class="bg-white px-3 py-1 rounded-full text-sm shadow-sm">Centre-ville</span>
+                    </div>
+                </div>
+                
+                <!-- Pointe-Noire -->
+                <div class="bg-orange-50 rounded-xl p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-umbrella-beach text-orange-600"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold">Pointe-Noire</h3>
+                    </div>
+                    <p class="text-gray-700 mb-4">6 arrondissements couverts :</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <span class="bg-white px-3 py-1 rounded-full text-sm shadow-sm">Lumumba</span>
+                        <span class="bg-white px-3 py-1 rounded-full text-sm shadow-sm">Mvou-Mvou</span>
+                        <span class="bg-white px-3 py-1 rounded-full text-sm shadow-sm">Tié-Tié</span>
+                        <span class="bg-white px-3 py-1 rounded-full text-sm shadow-sm">Loandjili</span>
+                        <span class="bg-white px-3 py-1 rounded-full text-sm shadow-sm">Mongo-Mpoukou</span>
+                        <span class="bg-white px-3 py-1 rounded-full text-sm shadow-sm">Ngoyo</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Map Section -->
+    <section class="py-16 bg-gray-100">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">Explorez sur la carte</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">Trouvez des logements géolocalisés dans votre quartier préféré</p>
+            </div>
+            
+            <div class="map-container rounded-xl overflow-hidden shadow-lg">
+                <div class="h-full flex items-center justify-center">
+                    <div class="text-center">
+                        <i class="fas fa-map-marked-alt text-4xl text-gray-400 mb-3"></i>
+                        <p class="text-gray-500">Carte interactive des logements disponibles</p>
+                        <button class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg">
+                            Ouvrir la carte
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">Ce que disent nos utilisateurs</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">Découvrez les expériences de ceux qui ont trouvé leur logement idéal avec Smile Immo</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-gray-50 p-6 rounded-xl">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                            <i class="fas fa-user text-blue-600"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold">Jean K.</h4>
+                            <div class="flex text-yellow-400 text-sm">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600">"J'ai trouvé un super studio à Bacongo en seulement 2 jours grâce à Smile Immo. L'interface est très intuitive et les propriétaires répondent rapidement."</p>
+                </div>
+                
+                <div class="bg-gray-50 p-6 rounded-xl">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mr-3">
+                            <i class="fas fa-user text-purple-600"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold">Sarah M.</h4>
+                            <div class="flex text-yellow-400 text-sm">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600">"En tant que propriétaire, Smile Immo m'a permis de louer rapidement mon appartement à Ouenzé. Le badge vérifié donne confiance aux locataires."</p>
+                </div>
+                
+                <div class="bg-gray-50 p-6 rounded-xl">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mr-3">
+                            <i class="fas fa-user text-green-600"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold">David L.</h4>
+                            <div class="flex text-yellow-400 text-sm">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600">"La recherche par quartier est très pratique. J'ai pu trouver exactement ce que je cherchais à Mvou-Mvou sans perdre de temps."</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-16 bg-blue-600 text-white">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-3xl font-bold mb-6">Prêt à trouver votre logement idéal ?</h2>
+            <p class="text-xl mb-8 max-w-2xl mx-auto">Rejoignez des milliers d'utilisateurs satisfaits à Brazzaville et Pointe-Noire</p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="#" class="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+                    <i class="fas fa-search mr-2"></i> Rechercher un logement
+                </a>
+                <a href="#" class="bg-transparent border-2 border-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-home mr-2"></i> Déposer une annonce
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white pt-16 pb-8">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4 flex items-center">
+                        <i class="fas fa-home mr-2"></i> Smile Immo
+                    </h3>
+                    <p class="text-gray-400 mb-4">La plateforme de référence pour la location de logements à Brazzaville et Pointe-Noire.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Liens rapides</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Accueil</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Rechercher</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Déposer une annonce</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Favoris</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Connexion</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Informations</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">À propos</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Contact</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">FAQ</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Conditions d'utilisation</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Politique de confidentialité</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Contactez-nous</h4>
+                    <ul class="space-y-3 text-gray-400">
+                        <li class="flex items-start">
+                            <i class="fas fa-phone-alt mt-1 mr-3"></i>
+                            <div>
+                                <p>+242 06 575 9841</p>
+                                <p>+242 05 758 2120</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-envelope mt-1 mr-3"></i>
+                            <span>smileevent10@gmail.com</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-map-marker-alt mt-1 mr-3"></i>
+                            <span>Brazzaville, République du Congo</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 pt-8 text-center text-gray-500">
+                <p>&copy; 2023 Smile Immo. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Floating Action Button -->
+    <div class="fixed bottom-6 right-6 z-40">
+        <button class="w-14 h-14 bg-blue-600 rounded-full shadow-lg flex items-center justify-center text-white hover:bg-blue-700 transition-colors">
+            <i class="fas fa-comment-dots text-xl"></i>
+        </button>
+    </div>
+
+    <script>
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.querySelector('.mobile-menu');
+        const overlay = document.getElementById('overlay');
+        const closeMenu = document.getElementById('close-menu');
+        
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.add('open');
+            overlay.classList.remove('hidden');
+        });
+        
+        closeMenu.addEventListener('click', () => {
+            mobileMenu.classList.remove('open');
+            overlay.classList.add('hidden');
+        });
+        
+        overlay.addEventListener('click', () => {
+            mobileMenu.classList.remove('open');
+            overlay.classList.add('hidden');
+        });
+        
+        // Tab functionality
+        const tabs = document.querySelectorAll('.tab-button');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('tab-active'));
+                tab.classList.add('tab-active');
+            });
+        });
+        
+        // Property card hover effect
+        const propertyCards = document.querySelectorAll('.property-card');
+        propertyCards.forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease';
+            });
+        });
+    </script>
+</body>
+</html>
